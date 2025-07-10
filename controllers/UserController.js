@@ -1,122 +1,146 @@
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/config");
-const User = require("../models/UserModel");
-const {
-  CREATED,
-} = require("../utils/errors");
-const NotFoundError = require("../errors/NotFoundError");
-const BadRequestError = require("../errors/BadRequestError");
-const InternalServerError = require("../errors/InternalServerError");
-const UnauthorizedError = require("../errors/UnauthorizedError");
-const ConflictError = require("../errors/ConflictError");
+const Playlist = require('../models/Playlist');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const InternalServerError = require('../errors/InternalServerError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const { CREATED } = require('../utils/errors');
 
-const createUser = async (req, res,next) => {
-  const { name, email, password, avatar } = req.body;
+const createPlaylist = async (req, res, next) => {
+  const { name, description, items } = req.body;
+  const userId = req.user._id;
 
-  if (!name || !avatar || !email || !password) {
-    return next(new BadRequestError('Name, avatar, email and password are required'))
+  if (!name) {
+    return next(new BadRequestError('Name is required'));
   }
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return next(new ConflictError('Email already exists'))
-  }
-  const hashedPassword = await bcryptjs.hash(password, 10);
+
   try {
-    const user = await User.create({
+    const newPlaylist = await Playlist.create({
       name,
-      avatar,
-      email,
-      password: hashedPassword,
+      description,
+      items,
+      userId
     });
 
-    return res.status(CREATED).json({
-      data: {
-        _id: user._id,
-        name: user.name,
-        avatar: user.avatar,
-        email: user.email,
-      },
-    });
+    return res.status(CREATED).json({ data: newPlaylist });
   } catch (err) {
-    if (err.code === 11000) {
-      return next(new ConflictError('Email already in use'));
+    if (err.name === 'ValidationError') {
+      return next(new BadRequestError('Invalid data'));
     }
-    if (err.name === "ValidationError") {
-      return next(new BadRequestError('Input data not valid'))
-    }
-
-    return next(new InternalServerError('Failed to create user'))
+    return next(new InternalServerError('Failed to create playlist'));
   }
 };
 
-const login = (req, res,next) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return next(new BadRequestError('Email and password are required'))
+const getAllPlaylists = async (req, res, next) => {
+  try {
+    const playlists = await Playlist.find().populate('userId', 'name');
+    return res.json({ data: playlists });
+  } catch (err) {
+    return next(new InternalServerError('Failed to get playlists'));
   }
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-
-      return res.send({ token });
-    })
-    .catch(() =>
-      next(new UnauthorizedError('Invalid email or password'))
-    );
 };
 
-const getCurrentUser = (req, res,next) => {
-  const userId = req.user._id;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return next(new NotFoundError('User not found'))
-      }
-      return res.json({ data: user });
-    })
-    .catch((err) =>
-      next(new InternalServerError(err.message))
-    );
-};
-
-const updateUserProfile = (req, res,next) => {
-  const { name, avatar } = req.body;
-  const userId = req.user._id;
-
-  return User.findByIdAndUpdate(
-    userId,
-    { name, avatar },
-    {
-      new: true,
-      runValidators: true,
+const getPlaylistById = async (req, res, next) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id).populate('userId', 'name');
+    if (!playlist) {
+      return next(new NotFoundError('Playlist not found'));
     }
-  )
-    .then((updatedUser) => {
-      if (!updatedUser) {
-        return next(new NotFoundError('User not found'));
-      }
+    return res.json({ data: playlist });
+  } catch (err) {
+    return next(new InternalServerError('Failed to get playlist'));
+  }
+};
 
-      return res.json({
-        data: updatedUser,
-      });
-    })
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        return next(new BadRequestError('Invalid data'))
-      }
-      return next(new InternalServerError("Failed to update user profile"))
-    });
+const updatePlaylist = async (req, res, next) => {
+  const { name, description, items } = req.body;
+  const userId = req.user._id;
+
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) {
+      return next(new NotFoundError('Playlist not found'));
+    }
+
+    if (playlist.userId.toString() !== userId.toString()) {
+      return next(new ForbiddenError('Not authorized to update this playlist'));
+    }
+
+    playlist.name = name || playlist.name;
+    playlist.description = description || playlist.description;
+    playlist.items = items || playlist.items;
+
+    await playlist.save();
+    return res.json({ data: playlist });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      return next(new BadRequestError('Invalid data'));
+    }
+    return next(new InternalServerError('Failed to update playlist'));
+  }
+};
+
+const deletePlaylist = async (req, res, next) => {
+  const userId = req.user._id;
+
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) {
+      return next(new NotFoundError('Playlist not found'));
+    }
+
+    if (playlist.userId.toString() !== userId.toString()) {
+      return next(new ForbiddenError('Not authorized to delete this playlist'));
+    }
+
+    await playlist.deleteOne();
+    return res.json({ message: 'Playlist deleted' });
+  } catch (err) {
+    return next(new InternalServerError('Failed to delete playlist'));
+  }
+};
+
+const likePlaylist = async (req, res, next) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) {
+      return next(new NotFoundError('Playlist not found'));
+    }
+
+    if (!playlist.likes.includes(req.user._id)) {
+      playlist.likes.push(req.user._id);
+    }
+
+    await playlist.save();
+    return res.json({ data: playlist });
+  } catch (err) {
+    return next(new InternalServerError('Failed to like playlist'));
+  }
+};
+
+const unlikePlaylist = async (req, res, next) => {
+  try {
+    const playlist = await Playlist.findById(req.params.id);
+    if (!playlist) {
+      return next(new NotFoundError('Playlist not found'));
+    }
+
+    playlist.likes = playlist.likes.filter(
+      (userId) => userId.toString() !== req.user._id.toString()
+    );
+
+    await playlist.save();
+    return res.json({ data: playlist });
+  } catch (err) {
+    return next(new InternalServerError('Failed to unlike playlist'));
+  }
 };
 
 module.exports = {
-  createUser,
-  login,
-  getCurrentUser,
-  updateUserProfile,
+  createPlaylist,
+  getAllPlaylists,
+  getPlaylistById,
+  updatePlaylist,
+  deletePlaylist,
+  likePlaylist,
+  unlikePlaylist
 };

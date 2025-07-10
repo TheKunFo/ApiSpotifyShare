@@ -8,6 +8,7 @@ const { errors } = require("celebrate");
 
 const auth = require("./middlewares/auth");
 const userRoutes = require("./routes/UserRoutes");
+const playlistRoutes = require("./routes/PlaylistRoutes");
 const router = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
@@ -23,7 +24,7 @@ app.use(cors());
 
 app.use("/", router);
 app.use(auth);
-
+app.use("/playlists", playlistRoutes);
 app.use("/users", userRoutes);
 app.use((_req, _res, next) => {
   next(new NotFoundError("Requested resource not found"));
