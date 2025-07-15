@@ -8,10 +8,7 @@ https://spotify.thekunfo.com/
 
 **Production API URL**:
 
-- Primary: `https://apispotify.thekunfo.com/api/`
-- Alternative: `https://api.apispotify.thekunfo.com/`
-
-Both patterns are supported for API access in production mode.
+https://apispotify.thekunfo.com
 
 Technologies and Techniques Used
 
