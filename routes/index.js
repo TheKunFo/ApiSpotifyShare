@@ -34,11 +34,11 @@ router.get("/", (req, res) => {
         "GET /api/playlists/:id",
       ],
       protected: [
-        "GET /api/users/me",
-        "PATCH /api/users/me",
-        "POST /api/playlists",
-        "PATCH /api/playlists/:id",
-        "DELETE /api/playlists/:id",
+        "GET /users/me",
+        "PATCH /users/me",
+        "POST /playlists",
+        "PATCH /playlists/:id",
+        "DELETE /playlists/:id",
       ],
     },
   });
