@@ -17,7 +17,7 @@ module.exports = {
 
   // Server Configuration
   server: {
-    port: constants.SERVER.DEFAULT_PORT,
+    port: 3002, // Changed from default 3001 to avoid conflicts
     domain: constants.SERVER.DEFAULT_DOMAIN,
     protocol: "http",
   },
@@ -26,9 +26,14 @@ module.exports = {
   cors: {
     origins: [
       "http://localhost:3000",
-      "http://localhost:3001",
+      "http://localhost:3002", // Updated backend port
       "http://127.0.0.1:3000",
-      "http://127.0.0.1:3001",
+      "http://127.0.0.1:3002", // Updated backend port
+      "http://localhost:5173", // Vite dev server
+      "http://127.0.0.1:5173", // Vite dev server
+      // Add production origins for testing
+      "https://spotify.thekunfo.com",
+      "https://apispotify.thekunfo.com",
     ],
     credentials: true,
     maxAge: constants.SECURITY.CORS.MAX_AGE,

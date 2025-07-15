@@ -30,6 +30,49 @@ const NotFoundError = require("./errors/NotFoundError");
 
 const app = express();
 
+// Configure CORS based on environment
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = config.cors.origins;
+
+    // Add dynamic origins based on current environment
+    if (NODE_ENV === "production") {
+      allowedOrigins.push("https://spotify.thekunfo.com");
+      allowedOrigins.push("https://apispotify.thekunfo.com");
+    } else {
+      // Development - allow localhost origins
+      allowedOrigins.push("http://localhost:5173");
+      allowedOrigins.push("http://localhost:3000");
+      allowedOrigins.push("http://127.0.0.1:5173");
+      allowedOrigins.push("http://127.0.0.1:3000");
+    }
+
+    console.log("CORS check:", { origin, allowedOrigins, NODE_ENV });
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn("CORS blocked origin:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: config.cors.credentials,
+  maxAge: config.cors.maxAge,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Origin",
+    "X-Requested-With",
+    "Accept",
+  ],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
 app.use(securityHeaders);
 app.use(rateLimiters.general); // Apply general rate limiting to all requests
 app.use(requestLogger);
@@ -37,7 +80,7 @@ app.use(responseLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
+app.use(cors(corsOptions));
 
 // API routes - all routes are handled through routes/index.js under /api
 app.use("/", router);
