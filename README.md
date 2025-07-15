@@ -78,6 +78,7 @@ The application uses a structured configuration system with separate files for d
 The API implements comprehensive rate limiting to prevent abuse and ensure fair usage:
 
 **Rate Limit Types:**
+
 - **General API**: 100 requests per 15 minutes per IP
 - **Authentication**: 5 login/signup attempts per 15 minutes per IP
 - **Playlist Operations**: 20 create/update/delete operations per 5 minutes per IP

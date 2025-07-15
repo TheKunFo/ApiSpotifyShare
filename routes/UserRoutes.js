@@ -13,6 +13,11 @@ const rateLimiters = require("../middlewares/rateLimiter");
 
 userRoutes.get("/me", rateLimiters.read, getCurrentUser);
 
-userRoutes.patch("/me", rateLimiters.playlist, validateUpdateProfile, updateUserProfile);
+userRoutes.patch(
+  "/me",
+  rateLimiters.playlist,
+  validateUpdateProfile,
+  updateUserProfile
+);
 
 module.exports = userRoutes;
