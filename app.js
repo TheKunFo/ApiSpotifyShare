@@ -37,18 +37,10 @@ app.use(responseLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration using environment-specific settings
-const corsOptions = {
-  origin: config.cors.origins,
-  credentials: config.cors.credentials,
-  optionsSuccessStatus: 200,
-  maxAge: config.cors.maxAge,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 // API routes - all routes are handled through routes/index.js under /api
-app.use("/api", router);
+app.use("/", router);
 
 app.use((_req, _res, next) => {
   next(new NotFoundError("Requested resource not found"));

@@ -48,6 +48,7 @@ const validateCreatePlaylist = celebrate({
         })
       )
       .optional(),
+    isPublic: Joi.boolean().optional(),
   }),
 });
 
