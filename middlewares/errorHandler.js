@@ -5,17 +5,39 @@ const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
 const errorHandler = (err, req, res, next) => {
   // Handle Celebrate validation errors
   if (isCelebrateError(err)) {
-    const validationBody = err.details.get("body");
-    const validationParams = err.details.get("params");
+    const validationErrors = [];
 
-    let message = "Validation error";
-    if (validationBody) {
-      message = validationBody.message;
-    } else if (validationParams) {
-      message = validationParams.message;
+    // Collect validation errors from body
+    const bodyError = err.details.get("body");
+    if (bodyError) {
+      const bodyDetails = bodyError.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message.replace(/"/g, ""),
+      }));
+      validationErrors.push(...bodyDetails);
     }
 
-    return res.status(400).send({ message });
+    // Collect validation errors from params
+    const paramsError = err.details.get("params");
+    if (paramsError) {
+      const paramsDetails = paramsError.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message.replace(/"/g, ""),
+      }));
+      validationErrors.push(...paramsDetails);
+    }
+
+    const message =
+      validationErrors.length > 0
+        ? validationErrors
+            .map((error) => `${error.field}: ${error.message}`)
+            .join(", ")
+        : "Validation failed";
+
+    return res.status(400).send({
+      message: `Validation failed: ${message}`,
+      errors: validationErrors,
+    });
   }
 
   // Handle MongoDB CastError (invalid ObjectId)

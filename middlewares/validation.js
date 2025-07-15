@@ -18,10 +18,12 @@ const validateSignup = celebrate({
 });
 
 const validateUpdateProfile = celebrate({
-  [Segments.BODY]: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    avatar: Joi.string().uri().optional(),
-  }),
+  [Segments.BODY]: Joi.object()
+    .keys({
+      name: Joi.string().min(2).max(30).optional(),
+      avatar: Joi.string().uri().optional(),
+    })
+    .or("name", "avatar"), // At least one of these fields must be provided
 });
 
 // Playlist validation schemas
