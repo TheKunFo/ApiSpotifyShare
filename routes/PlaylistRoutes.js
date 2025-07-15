@@ -10,6 +10,20 @@ const rateLimiters = require("../middlewares/rateLimiter");
 
 const playlistRoutes = express.Router();
 
+// Public playlist routes - read operations
+playlistRoutes.get(
+  "/playlists",
+  rateLimiters.read,
+  playlistController.getAllPlaylists
+);
+
+playlistRoutes.get(
+  "/playlists/:id",
+  rateLimiters.read,
+  validatePlaylistId,
+  playlistController.getPlaylistById
+);
+
 // All routes in this file require authentication (handled by index.js)
 
 playlistRoutes.post(

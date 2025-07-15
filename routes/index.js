@@ -49,16 +49,6 @@ router.post("/signin", rateLimiters.auth, validateSignin, login);
 
 router.post("/signup", rateLimiters.auth, validateSignup, createUser);
 
-// Public playlist routes - read operations
-router.get("/playlists", rateLimiters.read, playlistController.getAllPlaylists);
-
-router.get(
-  "/playlists/:id",
-  rateLimiters.read,
-  validatePlaylistId,
-  playlistController.getPlaylistById
-);
-
 // Protected routes (authentication required)
 router.use(auth);
 router.use("/users", userRoutes);
