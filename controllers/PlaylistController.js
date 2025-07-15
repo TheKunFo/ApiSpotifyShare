@@ -1,16 +1,16 @@
-const Playlist = require('../models/PlaylistModel');
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
-const InternalServerError = require('../errors/InternalServerError');
-const ForbiddenError = require('../errors/ForbiddenError');
-const { CREATED } = require('../utils/errors');
+const Playlist = require("../models/PlaylistModel");
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const InternalServerError = require("../errors/InternalServerError");
+const ForbiddenError = require("../errors/ForbiddenError");
+const { CREATED } = require("../utils/errors");
 
 const createPlaylist = async (req, res, next) => {
   const { name, description, items } = req.body;
   const userId = req.user._id;
 
   if (!name) {
-    return next(new BadRequestError('Name is required'));
+    return next(new BadRequestError("Name is required"));
   }
 
   try {
@@ -18,36 +18,42 @@ const createPlaylist = async (req, res, next) => {
       name,
       description,
       items,
-      userId
+      userId,
     });
 
     return res.status(CREATED).json({ data: newPlaylist });
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Invalid data'));
+    if (err.name === "ValidationError") {
+      return next(new BadRequestError("Invalid data"));
     }
-    return next(new InternalServerError('Failed to create playlist'));
+    return next(new InternalServerError("Failed to create playlist"));
   }
 };
 
 const getAllPlaylists = async (req, res, next) => {
   try {
-    const playlists = await Playlist.find().populate('userId', 'name');
+    const playlists = await Playlist.find().populate("userId", "name");
     return res.json({ data: playlists });
   } catch (err) {
-    return next(new InternalServerError('Failed to get playlists'));
+    return next(new InternalServerError("Failed to get playlists"));
   }
 };
 
 const getPlaylistById = async (req, res, next) => {
   try {
-    const playlist = await Playlist.findById(req.params.id).populate('userId', 'name');
+    const playlist = await Playlist.findById(req.params.id).populate(
+      "userId",
+      "name"
+    );
     if (!playlist) {
-      return next(new NotFoundError('Playlist not found'));
+      return next(new NotFoundError("Playlist not found"));
     }
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError('Failed to get playlist'));
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid playlist ID"));
+    }
+    return next(new InternalServerError("Failed to get playlist"));
   }
 };
 
@@ -58,11 +64,11 @@ const updatePlaylist = async (req, res, next) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) {
-      return next(new NotFoundError('Playlist not found'));
+      return next(new NotFoundError("Playlist not found"));
     }
 
     if (playlist.userId.toString() !== userId.toString()) {
-      return next(new ForbiddenError('Not authorized to update this playlist'));
+      return next(new ForbiddenError("Not authorized to update this playlist"));
     }
 
     playlist.name = name || playlist.name;
@@ -72,10 +78,13 @@ const updatePlaylist = async (req, res, next) => {
     await playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Invalid data'));
+    if (err.name === "ValidationError") {
+      return next(new BadRequestError("Invalid data"));
     }
-    return next(new InternalServerError('Failed to update playlist'));
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid playlist ID"));
+    }
+    return next(new InternalServerError("Failed to update playlist"));
   }
 };
 
@@ -85,17 +94,20 @@ const deletePlaylist = async (req, res, next) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) {
-      return next(new NotFoundError('Playlist not found'));
+      return next(new NotFoundError("Playlist not found"));
     }
 
     if (playlist.userId.toString() !== userId.toString()) {
-      return next(new ForbiddenError('Not authorized to delete this playlist'));
+      return next(new ForbiddenError("Not authorized to delete this playlist"));
     }
 
     await playlist.deleteOne();
-    return res.json({ message: 'Playlist deleted' });
+    return res.json({ message: "Playlist deleted" });
   } catch (err) {
-    return next(new InternalServerError('Failed to delete playlist'));
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid playlist ID"));
+    }
+    return next(new InternalServerError("Failed to delete playlist"));
   }
 };
 
@@ -103,7 +115,7 @@ const likePlaylist = async (req, res, next) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) {
-      return next(new NotFoundError('Playlist not found'));
+      return next(new NotFoundError("Playlist not found"));
     }
 
     if (!playlist.likes.includes(req.user._id)) {
@@ -113,7 +125,10 @@ const likePlaylist = async (req, res, next) => {
     await playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError('Failed to like playlist'));
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid playlist ID"));
+    }
+    return next(new InternalServerError("Failed to like playlist"));
   }
 };
 
@@ -121,7 +136,7 @@ const unlikePlaylist = async (req, res, next) => {
   try {
     const playlist = await Playlist.findById(req.params.id);
     if (!playlist) {
-      return next(new NotFoundError('Playlist not found'));
+      return next(new NotFoundError("Playlist not found"));
     }
 
     playlist.likes = playlist.likes.filter(
@@ -131,7 +146,10 @@ const unlikePlaylist = async (req, res, next) => {
     await playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError('Failed to unlike playlist'));
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid playlist ID"));
+    }
+    return next(new InternalServerError("Failed to unlike playlist"));
   }
 };
 
@@ -142,5 +160,5 @@ module.exports = {
   updatePlaylist,
   deletePlaylist,
   likePlaylist,
-  unlikePlaylist
+  unlikePlaylist,
 };
