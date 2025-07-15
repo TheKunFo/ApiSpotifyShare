@@ -26,7 +26,7 @@ module.exports = {
   cors: {
     origins: [
       "http://localhost:3000",
-      "http://localhost:3002",
+      "https://spotify.thekunfo.com",
       "http://127.0.0.1:3000",
       "http://127.0.0.1:3002",
     ],
