@@ -13,9 +13,9 @@ module.exports = {
 
   // Server Configuration
   SERVER: {
-    DEFAULT_PORT: 3001,
+    DEFAULT_PORT: 3002,
     DEFAULT_DOMAIN: "localhost",
-    PRODUCTION_DOMAIN: "apispotify.thekunfo.com",
+    PRODUCTION_DOMAIN: "spotify.thekunfo.com",
   },
 
   // Security Configuration
