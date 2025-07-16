@@ -36,27 +36,34 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = config.cors.origins;
+    // Create a fresh copy of allowed origins to avoid mutation
+    const allowedOrigins = [...config.cors.origins];
 
     // Add dynamic origins based on current environment
     if (NODE_ENV === "production") {
-      allowedOrigins.push("https://spotify.thekunfo.com");
-      allowedOrigins.push("https://apispotify.thekunfo.com");
+      allowedOrigins.push(
+        "https://spotify.thekunfo.com",
+        "https://apispotify.thekunfo.com"
+      );
     } else {
       // Development - allow localhost origins
-      allowedOrigins.push("http://localhost:5173");
-      allowedOrigins.push("http://localhost:3000");
-      allowedOrigins.push("http://127.0.0.1:5173");
-      allowedOrigins.push("http://127.0.0.1:3000");
+      allowedOrigins.push(
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        "http://localhost:3002",
+        "http://127.0.0.1:3002"
+      );
     }
 
-    console.log("CORS check:", { origin, allowedOrigins, NODE_ENV });
+    console.log("CORS check:", { origin, NODE_ENV, allowed: allowedOrigins.includes(origin) });
 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn("CORS blocked origin:", origin);
-      callback(new Error("Not allowed by CORS"));
+      console.warn("CORS blocked origin:", origin, "Allowed:", allowedOrigins);
+      callback(null, false); // Don't throw error, just deny
     }
   },
   credentials: config.cors.credentials,
