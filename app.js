@@ -57,7 +57,11 @@ const corsOptions = {
       );
     }
 
-    console.log("CORS check:", { origin, NODE_ENV, allowed: allowedOrigins.includes(origin) });
+    console.log("CORS check:", {
+      origin,
+      NODE_ENV,
+      allowed: allowedOrigins.includes(origin),
+    });
 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
