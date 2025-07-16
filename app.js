@@ -17,6 +17,7 @@ const {
   SSL_KEY_PATH,
   config,
 } = require("./utils/config");
+console.log(require("./utils/config"));
 const router = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
 const {
@@ -107,7 +108,7 @@ app.use(errorHandler);
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI);
-
+console.log(process.env);
 // HTTPS configuration for production with SSL certificates
 if (NODE_ENV === "production" && SSL_CERT_PATH && SSL_KEY_PATH) {
   try {
