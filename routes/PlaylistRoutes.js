@@ -1,4 +1,5 @@
 const express = require("express");
+<<<<<<< HEAD
 const { celebrate, Joi, Segments } = require("celebrate");
 const auth = require("../middlewares/auth");
 const playlistController = require("../controllers/PlaylistController");
@@ -14,11 +15,38 @@ playlistRoutes.get(
       id: Joi.string().hex().length(24).required(),
     }),
   }),
+=======
+
+const playlistController = require("../controllers/PlaylistController");
+const {
+  validateCreatePlaylist,
+  validateUpdatePlaylist,
+  validatePlaylistId,
+} = require("../middlewares/validation");
+const rateLimiters = require("../middlewares/rateLimiter");
+
+const playlistRoutes = express.Router();
+
+// Public playlist routes - read operations
+playlistRoutes.get(
+  "/playlists",
+  rateLimiters.read,
+  playlistController.getAllPlaylists
+);
+
+playlistRoutes.get(
+  "/playlists/:id",
+  rateLimiters.read,
+  validatePlaylistId,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.getPlaylistById
 );
 
+// All routes in this file require authentication (handled by index.js)
+
 playlistRoutes.post(
   "/",
+<<<<<<< HEAD
   auth,
   celebrate({
     [Segments.BODY]: Joi.object().keys({
@@ -38,11 +66,16 @@ playlistRoutes.post(
         .optional(),
     }),
   }),
+=======
+  rateLimiters.playlist,
+  validateCreatePlaylist,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.createPlaylist
 );
 
 playlistRoutes.patch(
   "/:id",
+<<<<<<< HEAD
   auth,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
@@ -64,39 +97,56 @@ playlistRoutes.patch(
         .optional(),
     }),
   }),
+=======
+  rateLimiters.playlist,
+  validateUpdatePlaylist,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.updatePlaylist
 );
 
 playlistRoutes.delete(
   "/:id",
+<<<<<<< HEAD
   auth,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       id: Joi.string().hex().length(24).required(),
     }),
   }),
+=======
+  rateLimiters.playlist,
+  validatePlaylistId,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.deletePlaylist
 );
 
 playlistRoutes.post(
   "/:id/like",
+<<<<<<< HEAD
   auth,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       id: Joi.string().hex().length(24).required(),
     }),
   }),
+=======
+  validatePlaylistId,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.likePlaylist
 );
 
 playlistRoutes.post(
   "/:id/unlike",
+<<<<<<< HEAD
   auth,
   celebrate({
     [Segments.PARAMS]: Joi.object().keys({
       id: Joi.string().hex().length(24).required(),
     }),
   }),
+=======
+  validatePlaylistId,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   playlistController.unlikePlaylist
 );
 

@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 const mongoose = require("mongoose");
+=======
+const mongoose = require('mongoose');
+
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
 const { Schema } = mongoose;
 
 const PlaylistSchema = new Schema(
