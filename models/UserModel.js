@@ -11,10 +11,11 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    required: true,
+    required: false, // Make avatar optional for profile updates
     validate: {
       validator(value) {
-        return validator.isURL(value);
+        // Only validate if value is provided
+        return !value || validator.isURL(value);
       },
       message: "You must enter a valid URL",
     },
@@ -38,7 +39,10 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password
+) {
   return this.findOne({ email })
     .select("+password")
     .then((user) => {
