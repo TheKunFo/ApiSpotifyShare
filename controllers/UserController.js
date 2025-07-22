@@ -79,7 +79,6 @@ const getCurrentUser = (req, res, next) => {
       return res.json({ data: user });
     })
     .catch((err) => next(new InternalServerError(err.message)));
-    .catch((err) => next(new InternalServerError(err.message)));
 };
 
 const updateUserProfile = (req, res, next) => {
