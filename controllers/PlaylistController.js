@@ -18,8 +18,7 @@ const createPlaylist = async (req, res, next) => {
       name,
       description,
       items,
-      userId,
-      isPublic,
+      userId
     });
 
     return res.status(CREATED).send(newPlaylist);
@@ -33,7 +32,7 @@ const createPlaylist = async (req, res, next) => {
 
 const getAllPlaylists = (req, res, next) => {
   try {
-    const playlists = Playlist.find().populate("userId", "name");
+    const playlists = await Playlist.find().populate('userId', 'name');
     return res.json({ data: playlists });
   } catch (err) {
     return next(new InternalServerError("Failed to get playlists"));
@@ -42,16 +41,13 @@ const getAllPlaylists = (req, res, next) => {
 
 const getPlaylistById = (req, res, next) => {
   try {
-    const playlist = Playlist.findById(req.params.id).populate(
-      "userId",
-      "name"
-    );
+    const playlist = await Playlist.findById(req.params.id).populate('userId', 'name');
     if (!playlist) {
       return next(new NotFoundError("Playlist not found"));
     }
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError("Failed to get playlist"));
+    return next(new InternalServerError('Failed to get playlist'));
   }
 };
 
@@ -79,7 +75,7 @@ const updatePlaylist = (req, res, next) => {
     if (err.name === "ValidationError") {
       return next(new BadRequestError("Invalid data"));
     }
-    return next(new InternalServerError("Failed to update playlist"));
+    return next(new InternalServerError('Failed to update playlist'));
   }
 };
 
@@ -96,10 +92,10 @@ const deletePlaylist = (req, res, next) => {
       return next(new ForbiddenError("Not authorized to delete this playlist"));
     }
 
-    playlist.deleteOne();
-    return res.json({ message: "Playlist deleted" });
+    await playlist.deleteOne();
+    return res.json({ message: 'Playlist deleted' });
   } catch (err) {
-    return next(new InternalServerError("Failed to delete playlist"));
+    return next(new InternalServerError('Failed to delete playlist'));
   }
 };
 
@@ -117,7 +113,7 @@ const likePlaylist = (req, res, next) => {
     playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError("Failed to like playlist"));
+    return next(new InternalServerError('Failed to like playlist'));
   }
 };
 
@@ -135,7 +131,7 @@ const unlikePlaylist = (req, res, next) => {
     playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-    return next(new InternalServerError("Failed to unlike playlist"));
+    return next(new InternalServerError('Failed to unlike playlist'));
   }
 };
 
