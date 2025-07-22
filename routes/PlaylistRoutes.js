@@ -1,97 +1,61 @@
-const express = require('express');
-const { celebrate, Joi, Segments } = require('celebrate');
-const auth = require('../middlewares/auth');
-const playlistController = require('../controllers/PlaylistController');
+const express = require("express");
+const auth = require("../middlewares/auth");
+const playlistController = require("../controllers/PlaylistController");
+const {
+  validateCreatePlaylist,
+  validateUpdatePlaylist,
+  validatePlaylistId,
+} = require("../middlewares/validation");
+const rateLimiters = require("../middlewares/rateLimiter");
 
 const playlistRoutes = express.Router();
 
-playlistRoutes.get('/', playlistController.getAllPlaylists);
+// Public playlist routes - read operations
+playlistRoutes.get("/", rateLimiters.read, playlistController.getAllPlaylists);
 
 playlistRoutes.get(
-  '/:id',
-  celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      id: Joi.string().hex().length(24).required(),
-    }),
-  }),
+  "/:id",
+  rateLimiters.read,
+  validatePlaylistId,
   playlistController.getPlaylistById
 );
 
+// All routes below require authentication
 playlistRoutes.post(
-  '/',
+  "/",
   auth,
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      name: Joi.string().min(1).required(),
-      description: Joi.string().allow('').optional(),
-      items: Joi.array().items(
-        Joi.object().keys({
-          spotifyId: Joi.string().required(),
-          name: Joi.string().required(),
-          artist: Joi.string().required(),
-          albumArt: Joi.string().uri().required(),
-          type: Joi.string().valid('track', 'album').required(),
-        })
-      ).optional(),
-    }),
-  }),
+  rateLimiters.playlist,
+  validateCreatePlaylist,
   playlistController.createPlaylist
 );
 
 playlistRoutes.patch(
-  '/:id',
+  "/:id",
   auth,
-  celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      id: Joi.string().hex().length(24).required(),
-    }),
-    [Segments.BODY]: Joi.object().keys({
-      name: Joi.string().min(1).optional(),
-      description: Joi.string().allow('').optional(),
-      items: Joi.array().items(
-        Joi.object().keys({
-          spotifyId: Joi.string().required(),
-          name: Joi.string().required(),
-          artist: Joi.string().required(),
-          albumArt: Joi.string().uri().required(),
-          type: Joi.string().valid('track', 'album').required(),
-        })
-      ).optional(),
-    }),
-  }),
+  rateLimiters.playlist,
+  validateUpdatePlaylist,
   playlistController.updatePlaylist
 );
 
 playlistRoutes.delete(
-  '/:id',
+  "/:id",
   auth,
-  celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      id: Joi.string().hex().length(24).required(),
-    }),
-  }),
+  rateLimiters.playlist,
+  validatePlaylistId,
   playlistController.deletePlaylist
 );
 
 playlistRoutes.post(
-  '/:id/like',
+  "/:id/like",
   auth,
-  celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      id: Joi.string().hex().length(24).required(),
-    }),
-  }),
+  validatePlaylistId,
   playlistController.likePlaylist
 );
 
 playlistRoutes.post(
-  '/:id/unlike',
+  "/:id/unlike",
   auth,
-  celebrate({
-    [Segments.PARAMS]: Joi.object().keys({
-      id: Joi.string().hex().length(24).required(),
-    }),
-  }),
+  validatePlaylistId,
   playlistController.unlikePlaylist
 );
 
