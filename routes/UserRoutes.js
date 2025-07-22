@@ -9,8 +9,10 @@ const {
 } = require('../controllers/UserController');
 
 userRoutes.get('/me', getCurrentUser);
+userRoutes.get('/me', getCurrentUser);
 
 userRoutes.patch(
+  '/me',
   '/me',
   celebrate({
     [Segments.BODY]: Joi.object().keys({
@@ -18,6 +20,20 @@ userRoutes.patch(
       avatar: Joi.string().uri().optional(),
     }),
   }),
+=======
+} = require("../controllers/UserController");
+const { validateUpdateProfile } = require("../middlewares/validation");
+const rateLimiters = require("../middlewares/rateLimiter");
+
+// All routes in this file require authentication (handled by index.js)
+
+userRoutes.get("/me", rateLimiters.read, getCurrentUser);
+
+userRoutes.patch(
+  "/me",
+  rateLimiters.playlist,
+  validateUpdateProfile,
+>>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   updateUserProfile
 );
 

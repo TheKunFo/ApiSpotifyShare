@@ -1,5 +1,7 @@
 # WTWR (What to Wear?): Back End
 
+# WTWR (What to Wear?): Back End
+
 is a backend application that provides clothing recommendations based on weather conditions and user preferences. This system allows users to manage their clothing collections by adding, editing, and deleting clothing items suitable for different weather scenarios. The backend serves as an API to handle requests from the frontend, providing secure and efficient access to clothing data.
 
 Technologies and Techniques Used
@@ -8,11 +10,13 @@ Technologies and Techniques Used
 
 - Express.js: Web framework to build RESTful APIs
 
-- MongoDB: NoSQL database to store clothing and user data
+- MongoDB: NoSQL database to store playlist and user data
 
 - Mongoose: ODM library to interact with MongoDB easily
 
 - JWT (JSON Web Tokens): For user authentication and session management
+
+- Helmet: Security middleware to set various HTTP headers
 
 - ESLint and Prettier: Tools to maintain code quality and style consistency
 
@@ -25,6 +29,10 @@ Technologies and Techniques Used
 `npm run dev` — to launch the server with the hot reload feature
 
 `npm run lint` — to check code quality with ESLint
+
+### Testing
+
+Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
 
 ### Testing
 

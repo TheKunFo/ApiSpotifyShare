@@ -79,20 +79,31 @@ const getCurrentUser = (req, res, next) => {
       return res.json({ data: user });
     })
     .catch((err) => next(new InternalServerError(err.message)));
+    .catch((err) => next(new InternalServerError(err.message)));
 };
 
 const updateUserProfile = (req, res, next) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
-  return User.findByIdAndUpdate(
-    userId,
-    { name, avatar },
-    {
-      new: true,
-      runValidators: true,
-    }
-  )
+  // Check if at least one field is provided
+  if (!name && !avatar) {
+    return next(
+      new BadRequestError(
+        "At least one field (name or avatar) must be provided"
+      )
+    );
+  }
+
+  // Build update object with only provided fields
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (avatar !== undefined) updateData.avatar = avatar;
+
+  return User.findByIdAndUpdate(userId, updateData, {
+    new: true,
+    runValidators: true,
+  })
     .then((updatedUser) => {
       if (!updatedUser) {
         return next(new NotFoundError("User not found"));
@@ -105,7 +116,9 @@ const updateUserProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data"));
+        return next(new BadRequestError("Invalid data"));
       }
+      return next(new InternalServerError("Failed to update user profile"));
       return next(new InternalServerError("Failed to update user profile"));
     });
 };
