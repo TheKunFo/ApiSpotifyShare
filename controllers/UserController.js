@@ -115,9 +115,7 @@ const updateUserProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid data"));
-        return next(new BadRequestError("Invalid data"));
       }
-      return next(new InternalServerError("Failed to update user profile"));
       return next(new InternalServerError("Failed to update user profile"));
     });
 };

@@ -1,26 +1,10 @@
-const express = require('express');
-const { celebrate, Joi, Segments } = require('celebrate');
+const express = require("express");
 
 const userRoutes = express.Router();
 
 const {
   getCurrentUser,
   updateUserProfile,
-} = require('../controllers/UserController');
-
-userRoutes.get('/me', getCurrentUser);
-userRoutes.get('/me', getCurrentUser);
-
-userRoutes.patch(
-  '/me',
-  '/me',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      name: Joi.string().min(2).max(30).required(),
-      avatar: Joi.string().uri().optional(),
-    }),
-  }),
-=======
 } = require("../controllers/UserController");
 const { validateUpdateProfile } = require("../middlewares/validation");
 const rateLimiters = require("../middlewares/rateLimiter");
@@ -33,7 +17,6 @@ userRoutes.patch(
   "/me",
   rateLimiters.playlist,
   validateUpdateProfile,
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
   updateUserProfile
 );
 
