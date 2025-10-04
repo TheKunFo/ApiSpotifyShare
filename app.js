@@ -7,14 +7,13 @@ const cors = require("cors");
 const { errors } = require("celebrate");
 
 const {
-  MONGODB_URI,
   NODE_ENV,
   DOMAIN,
   SSL_CERT_PATH,
   SSL_KEY_PATH,
   config,
 } = require("./utils/config");
-console.log(require("./utils/config"));
+
 const router = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
 const {
@@ -30,9 +29,11 @@ const app = express();
 
 // Configure CORS based on environment
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      return callback(null, true);
+    }
 
     // Create a fresh copy of allowed origins to avoid mutation
     const allowedOrigins = [...config.cors.origins];
@@ -51,22 +52,16 @@ const corsOptions = {
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
         "http://localhost:3002",
-        "http://127.0.0.1:3002"
+        "http://127.0.0.1:3002",
+        "http://apispotify.localhost:3002",
+        "http://apispotify.localhost:5173"
       );
     }
 
-    console.log("CORS check:", {
-      origin,
-      NODE_ENV,
-      allowed: allowedOrigins.includes(origin),
-    });
-
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn("CORS blocked origin:", origin, "Allowed:", allowedOrigins);
-      callback(null, false); // Don't throw error, just deny
+      return callback(null, true);
     }
+    return callback(null, false); // Don't throw error, just deny
   },
   credentials: config.cors.credentials,
   maxAge: config.cors.maxAge,
@@ -89,10 +84,34 @@ app.use(responseLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware to handle api subdomain routing
+app.use((req, res, next) => {
+  const host = req.get("host") || "";
+  const isApiSubdomain = host.startsWith("api.");
+
+  // If request comes from api subdomain, treat root path as API
+  if (isApiSubdomain && req.path === "/") {
+    req.url = "/api";
+  } else if (isApiSubdomain && !req.path.startsWith("/api")) {
+    req.url = `/api${req.path}`;
+  }
+
+  next();
+});
+
 app.use(cors(corsOptions));
 
-// API routes - all routes are handled through routes/index.js under /api
-app.use("/", router);
+// Root endpoint to provide API information
+app.get("/", (req, res) => {
+  res.json({
+    name: "Spotify Share API Server",
+    message: "API is available at /api endpoint",
+    apiEndpoint: "/api",
+    documentation: "Visit /api for detailed endpoint information",
+  });
+});
+
+app.use("/api", router);
 
 app.use((_req, _res, next) => {
   next(new NotFoundError("Requested resource not found"));
@@ -102,52 +121,9 @@ app.use(errors());
 
 app.use(errorLogger);
 app.use(errorHandler);
-
-// Connect to MongoDB
 mongoose.connect(MONGODB_URI);
-console.log(process.env);
-// HTTPS configuration for production with SSL certificates
-if (NODE_ENV === "production" && SSL_CERT_PATH && SSL_KEY_PATH) {
-  try {
-    const privateKey = fs.readFileSync(SSL_KEY_PATH, "utf8");
-    const certificate = fs.readFileSync(SSL_CERT_PATH, "utf8");
-    const credentials = { key: privateKey, cert: certificate };
 
-    const httpsServer = https.createServer(credentials, app);
-    httpsServer.listen(PORT, () => {
-      // eslint-disable-next-line no-console
-      console.log(`HTTPS Server running on https://${DOMAIN}:${PORT}`);
-      // eslint-disable-next-line no-console
-      console.log(`API available at: https://${DOMAIN}:${PORT}/api`);
-      // eslint-disable-next-line no-console
-      console.log(`Alternative API URL: https://api.${DOMAIN}:${PORT}/`);
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(
-      "SSL certificate error, falling back to HTTP:",
-      error.message
-    );
-    // Fallback to HTTP
-    const httpServer = http.createServer(app);
-    httpServer.listen(PORT, () => {
-      // eslint-disable-next-line no-console
-      console.log(`HTTP Server running on http://${DOMAIN}:${PORT}`);
-      // eslint-disable-next-line no-console
-      console.log(`API available at: http://${DOMAIN}:${PORT}/api`);
-    });
-  }
-} else {
-  // Development or production without SSL certificates
-  const server = http.createServer(app);
-  server.listen(PORT, () => {
-    const protocol = NODE_ENV === "production" ? "https" : "http";
-    const host = NODE_ENV === "production" ? DOMAIN : "localhost";
-    // eslint-disable-next-line no-console
-    console.log(
-      `${protocol.toUpperCase()} Server running on ${protocol}://${host}:${PORT}`
-    );
-    // eslint-disable-next-line no-console
-    console.log(`API available at: ${protocol}://${host}:${PORT}/api`);
-  });
-}
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`App running in port ${PORT}`);
+});

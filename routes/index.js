@@ -3,13 +3,8 @@ const express = require("express");
 const router = express.Router();
 
 const { login, createUser } = require("../controllers/UserController");
-const playlistController = require("../controllers/PlaylistController");
 const auth = require("../middlewares/auth");
-const {
-  validateSignin,
-  validateSignup,
-  validatePlaylistId,
-} = require("../middlewares/validation");
+const { validateSignin, validateSignup } = require("../middlewares/validation");
 const rateLimiters = require("../middlewares/rateLimiter");
 const userRoutes = require("./UserRoutes");
 const playlistRoutes = require("./PlaylistRoutes");
@@ -20,6 +15,7 @@ router.get("/", (req, res) => {
     message: "Spotify Share API",
     version: "1.0.0",
     status: "active",
+    apiPath: "/api",
     rateLimits: {
       general: "100 requests per 15 minutes",
       authentication: "5 attempts per 15 minutes",
@@ -34,11 +30,13 @@ router.get("/", (req, res) => {
         "GET /api/playlists/:id",
       ],
       protected: [
-        "GET /users/me",
-        "PATCH /users/me",
-        "POST /playlists",
-        "PATCH /playlists/:id",
-        "DELETE /playlists/:id",
+        "GET /api/users/me",
+        "PATCH /api/users/me",
+        "POST /api/playlists",
+        "PATCH /api/playlists/:id",
+        "DELETE /api/playlists/:id",
+        "POST /api/playlists/:id/like",
+        "POST /api/playlists/:id/unlike",
       ],
     },
   });
