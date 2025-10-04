@@ -78,16 +78,12 @@ const getCurrentUser = (req, res, next) => {
       }
       return res.json({ data: user });
     })
-<<<<<<< HEAD
-    .catch((err) => next(new InternalServerError(err.message)));
-=======
     .catch((err) => {
       if (err.name === "CastError") {
         return next(new BadRequestError("Invalid user ID"));
       }
       return next(new InternalServerError("Failed to get user"));
     });
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
 };
 
 const updateUserProfile = (req, res, next) => {
@@ -123,22 +119,8 @@ const updateUserProfile = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-<<<<<<< HEAD
         return next(new BadRequestError("Invalid data"));
       }
-=======
-        // Get specific validation error messages
-        const errorMessages = Object.values(err.errors).map(
-          (error) => error.message
-        );
-        return next(
-          new BadRequestError(`Validation failed: ${errorMessages.join(", ")}`)
-        );
-      }
-      if (err.name === "CastError") {
-        return next(new BadRequestError("Invalid user ID"));
-      }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
       return next(new InternalServerError("Failed to update user profile"));
     });
 };

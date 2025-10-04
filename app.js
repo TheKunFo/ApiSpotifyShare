@@ -1,12 +1,6 @@
 require("dotenv").config();
 
-<<<<<<< HEAD
-const { PORT = 3002 } = process.env.PORT;
-=======
-const fs = require("fs");
-const https = require("https");
-const http = require("http");
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
+const { PORT = 3002 } = process.env;
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
@@ -15,7 +9,6 @@ const { errors } = require("celebrate");
 const {
   MONGODB_URI,
   NODE_ENV,
-  PORT,
   DOMAIN,
   SSL_CERT_PATH,
   SSL_KEY_PATH,

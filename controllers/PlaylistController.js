@@ -19,10 +19,7 @@ const createPlaylist = async (req, res, next) => {
       description,
       items,
       userId,
-<<<<<<< HEAD
       isPublic,
-=======
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     });
 
     return res.status(CREATED).send(newPlaylist);
@@ -36,11 +33,7 @@ const createPlaylist = async (req, res, next) => {
 
 const getAllPlaylists = (req, res, next) => {
   try {
-<<<<<<< HEAD
     const playlists = Playlist.find().populate("userId", "name");
-=======
-    const playlists = await Playlist.find().populate("userId", "name");
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return res.json({ data: playlists });
   } catch (err) {
     return next(new InternalServerError("Failed to get playlists"));
@@ -49,11 +42,7 @@ const getAllPlaylists = (req, res, next) => {
 
 const getPlaylistById = (req, res, next) => {
   try {
-<<<<<<< HEAD
     const playlist = Playlist.findById(req.params.id).populate(
-=======
-    const playlist = await Playlist.findById(req.params.id).populate(
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
       "userId",
       "name"
     );
@@ -62,12 +51,6 @@ const getPlaylistById = (req, res, next) => {
     }
     return res.json({ data: playlist });
   } catch (err) {
-<<<<<<< HEAD
-=======
-    if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid playlist ID"));
-    }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return next(new InternalServerError("Failed to get playlist"));
   }
 };
@@ -96,12 +79,6 @@ const updatePlaylist = (req, res, next) => {
     if (err.name === "ValidationError") {
       return next(new BadRequestError("Invalid data"));
     }
-<<<<<<< HEAD
-=======
-    if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid playlist ID"));
-    }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return next(new InternalServerError("Failed to update playlist"));
   }
 };
@@ -119,18 +96,9 @@ const deletePlaylist = (req, res, next) => {
       return next(new ForbiddenError("Not authorized to delete this playlist"));
     }
 
-<<<<<<< HEAD
     playlist.deleteOne();
     return res.json({ message: "Playlist deleted" });
   } catch (err) {
-=======
-    await playlist.deleteOne();
-    return res.json({ message: "Playlist deleted" });
-  } catch (err) {
-    if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid playlist ID"));
-    }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return next(new InternalServerError("Failed to delete playlist"));
   }
 };
@@ -149,12 +117,6 @@ const likePlaylist = (req, res, next) => {
     playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-<<<<<<< HEAD
-=======
-    if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid playlist ID"));
-    }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return next(new InternalServerError("Failed to like playlist"));
   }
 };
@@ -173,12 +135,6 @@ const unlikePlaylist = (req, res, next) => {
     playlist.save();
     return res.json({ data: playlist });
   } catch (err) {
-<<<<<<< HEAD
-=======
-    if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid playlist ID"));
-    }
->>>>>>> 130478b207ee574c762b03be90de95eb15e58d1a
     return next(new InternalServerError("Failed to unlike playlist"));
   }
 };
