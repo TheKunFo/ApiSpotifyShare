@@ -1,23 +1,22 @@
-const express = require('express');
-const { celebrate, Joi, Segments } = require('celebrate');
+const express = require("express");
 
 const userRoutes = express.Router();
 
 const {
   getCurrentUser,
   updateUserProfile,
-} = require('../controllers/UserController');
+} = require("../controllers/UserController");
+const { validateUpdateProfile } = require("../middlewares/validation");
+const rateLimiters = require("../middlewares/rateLimiter");
 
-userRoutes.get('/me', getCurrentUser);
+// All routes in this file require authentication (handled by index.js)
+
+userRoutes.get("/me", rateLimiters.read, getCurrentUser);
 
 userRoutes.patch(
-  '/me',
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      name: Joi.string().min(2).max(30).required(),
-      avatar: Joi.string().uri().optional(),
-    }),
-  }),
+  "/me",
+  rateLimiters.playlist,
+  validateUpdateProfile,
   updateUserProfile
 );
 
